@@ -30,6 +30,7 @@ function drawUI(contents) {
     readNGuiLayerData(template);
 }
 
+// Currently unused. This was for debugging
 function printInfo(content) {
     // Get the current 
     var element = document.getElementById('file-content');
@@ -62,8 +63,6 @@ function readNGuiLayerData(element, parentElementData = null) {
     readNGuiGraphicStyle(style, style_dict);
     var elementData = readNGuiElementData(elementByName(children, "ElementData"),
                                       style_dict, parentElementData);
-    console.log("HI there!");
-    console.log(elementData);
     var children_nodes = childElements(elementByName(children, "Children"));
     for (var child of children_nodes) {
         if (child.getAttribute("value") == "GcNGuiLayerData.xml") {
@@ -91,18 +90,29 @@ function readNGuiTextData(element, parentElementData) {
     var children = childElements(element);
     var text = elementByName(children, "Text").getAttribute("value");
     var style_dict = new Object();
-    readNGuiGraphicStyle(elementByName(children, "GraphicStyle"), style_dict)
+    readNGuiGraphicStyle(elementByName(children, "GraphicStyle"), style_dict);
     var text_style_dict = Object();
     readNGuiTextStyle(elementByName(children, "Style"), text_style_dict)
     var elementData = readNGuiElementData(elementByName(children, "Data"),
                                           style_dict, parentElementData);
+    console.log("Drawing rectangle");
     // draw the text
     var defaultStyle = text_style_dict["Default"];
     var canvas = document.getElementById("drawingCanvas");
     var ctx = canvas.getContext("2d");
+    // Save the context so we can restore to it.
+    ctx.save();
     ctx.font = "%spx Ariel".format(defaultStyle["FontHeight"]);
-    ctx.fillStyle = defaultStyle["Colour"];
-    ctx.fillText(text, elementData[0], elementData[1])
+    ctx.fillStyle = colourToRGBA(defaultStyle["Colour"]);
+    if (defaultStyle["HasDropShadow"] == "True") {
+        ctx.shadowColor = colourToRGBA(defaultStyle["DropShadowColour"]);
+        ctx.shadowOffsetX = defaultStyle["DropShadowOffset"] * Math.cos(defaultStyle["DropShadowAngle"]);
+        ctx.shadowOffsetY = defaultStyle["DropShadowOffset"] * Math.sin(defaultStyle["DropShadowAngle"]);
+        ctx.shadowBlur = 3;     // Arbitrary value to make it look nicer
+    }
+    ctx.fillText(text, elementData[0] + style_dict["Default"]["PaddingX"], elementData[1] + defaultStyle["FontHeight"] + style_dict["Default"]["PaddingY"]);
+    ctx.restore();
+    console.log("Drawing text");
 }
 
 // other stuff
@@ -110,7 +120,7 @@ function readNGuiTextData(element, parentElementData) {
 function readNGuiElementData(element, style, parentElementData) {
     var children = childElements(element);
     var ID = elementByName(children, "ID").getAttribute("value");
-    console.log("drawing" + ID);
+    console.log("drawing: " + ID);
     // Return the layout data as the sizes are needed for child templates to
     // determine their actual position/size.
     return readNGuiLayoutData(elementByName(children, "Layout"), style,
@@ -119,14 +129,12 @@ function readNGuiElementData(element, style, parentElementData) {
 
 function readNGuiLayoutData(element, style, parentElementData) {
     var children = childElements(element);
-    var PositionX = parseInt(elementByName(children, "PositionX").getAttribute("value"))
-    var PositionY = parseInt(elementByName(children, "PositionY").getAttribute("value"))
-    var Width = parseInt(elementByName(children, "Width").getAttribute("value"))
-    var WidthPercentage = elementByName(children, "WidthPercentage").getAttribute("value")
-    var Height = parseInt(elementByName(children, "Height").getAttribute("value"))
-    var HeightPercentage = elementByName(children, "HeightPercentage").getAttribute("value")
-
-    console.log(parentElementData);
+    var PositionX = parseInt(elementByName(children, "PositionX").getAttribute("value"));
+    var PositionY = parseInt(elementByName(children, "PositionY").getAttribute("value"));
+    var Width = parseInt(elementByName(children, "Width").getAttribute("value"));
+    var WidthPercentage = elementByName(children, "WidthPercentage").getAttribute("value");
+    var Height = parseInt(elementByName(children, "Height").getAttribute("value"));
+    var HeightPercentage = elementByName(children, "HeightPercentage").getAttribute("value");
 
     // determine the proportions of the parent element data.
     // If there is no parent then the parentElementData will be null.
@@ -151,13 +159,12 @@ function readNGuiLayoutData(element, style, parentElementData) {
 
     // Check to see if the width/height are relative
     if (WidthPercentage == "True") {
-        Width = parentWidth * (Width / 100)
+        Width = parentWidth * (Width / 100);
     }
     if (HeightPercentage == "True") {
-        Height = parentHeight * (Height / 100)
+        Height = parentHeight * (Height / 100);
     }
     drawRectangle(PositionX, PositionY, Width, Height, style);
-    console.log([PositionX, PositionY, Width, Height])
     return [PositionX, PositionY, Width, Height];
 }
 
@@ -173,7 +180,7 @@ function readNGuiTextStyle(element, style_dict) {
     // populate the dictionaries
     readNGuiTextStyleData(elementByName(children, "Default"), defaultStyle);
     readNGuiTextStyleData(elementByName(children, "Highlight"), highlightStyle);
-    readNGuiTextStyleData(elementByName(children, "Default"), activeStyle);
+    readNGuiTextStyleData(elementByName(children, "Active"), activeStyle);
     // combine them all
     style_dict['Default'] = defaultStyle;
     style_dict['Highlight'] = highlightStyle;
@@ -183,7 +190,11 @@ function readNGuiTextStyle(element, style_dict) {
 function readNGuiTextStyleData(element, style_dict) {
     var children = childElements(element);
     style_dict['Colour'] = readColour(elementByName(children, "Colour"));
-    style_dict['FontHeight'] = parseInt(elementByName(children, "FontHeight"));
+    style_dict['FontHeight'] = parseInt(elementByName(children, "FontHeight").getAttribute("value"));
+    style_dict['HasDropShadow'] = elementByName(children, "HasDropShadow").getAttribute("value");
+    style_dict['DropShadowColour'] = readColour(elementByName(children, "DropShadowColour"));
+    style_dict['DropShadowAngle'] = parseInt(elementByName(children, "DropShadowAngle").getAttribute("value"));
+    style_dict['DropShadowOffset'] = parseInt(elementByName(children, "DropShadowOffset").getAttribute("value"));
 }
 
 function readNGuiGraphicStyle(element, style_dict) {
@@ -205,6 +216,8 @@ function readNGuiGraphicStyle(element, style_dict) {
 
 function readNGuiGraphicStyleData(element, style_dict) {
     var children = childElements(element);
+    style_dict['PaddingX'] = parseInt(elementByName(children, "PaddingX").getAttribute("value"));
+    style_dict['PaddingY'] = parseInt(elementByName(children, "PaddingY").getAttribute("value"));
     style_dict['Colour'] = readColour(elementByName(children, "Colour"));
     style_dict['StrokeColour'] = readColour(elementByName(children, "StrokeColour"));
 }
@@ -215,19 +228,19 @@ function readColour(element) {
     return [elementByName(children, "R").getAttribute("value"),
             elementByName(children, "G").getAttribute("value"),
             elementByName(children, "B").getAttribute("value"),
-            elementByName(children, "A").getAttribute("value")]
+            elementByName(children, "A").getAttribute("value")];
 }
 
 function colourToRGBA(colour) {
     return "rgba(%s, %s, %s, %s)".format(colour[0], colour[1],
-                                         colour[2], colour[3])
+                                         colour[2], colour[3]);
 }
 
 
 function elementByName(elements, name) {
     for (var child of elements) {
         if (child.getAttribute("name") == name) {
-            return child
+            return child;
         }
     }
     return null;
@@ -245,6 +258,8 @@ function getData(element, reqName) {
 function drawRectangle(x, y, width, height, style) {
     var c = document.getElementById("drawingCanvas");
     var ctx = c.getContext("2d");
+    // Save the context so we can restore to it.
+    ctx.save();
     ctx.beginPath();
     var defaultStyle = style['Default']
     ctx.fillStyle = colourToRGBA(defaultStyle['Colour']);
@@ -252,6 +267,7 @@ function drawRectangle(x, y, width, height, style) {
     ctx.rect(x, y, width, height);
     //ctx.fillRect(x, y, width, height);
     ctx.stroke();
+    ctx.restore();
 }
 
 
