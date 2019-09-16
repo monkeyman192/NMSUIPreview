@@ -26,8 +26,14 @@ function drawUI(contents) {
     var canvas = document.getElementById("drawingCanvas");
     var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Clear the file structure
+    clearList();
+    // Find the list of things
+    var names_list = new Object();
     // Load the main template
-    readNGuiLayerData(template);
+    readNGuiLayerData(template, null, names_list);
+    var list = document.createElement('ul');
+    document.getElementById("file-structure").appendChild(populateList(list, names_list));
 }
 
 // Currently unused. This was for debugging
@@ -42,8 +48,7 @@ function childElements(element) {
     // children too...)
     var children = element.childNodes;
     var sub_elems = [];
-    for (var child of children)
-    {
+    for (var child of children) {
         try {
             // check to see if it has an attribute
             // I'm sure there is a better way to do this...
@@ -55,38 +60,64 @@ function childElements(element) {
     return sub_elems;
 }
 
-function readNGuiLayerData(element, parentElementData = null) {
+function populateList(list, data) {
+    // Populate the list of nodes
+    var item = document.createElement('li');
+    item.appendChild(document.createTextNode("Node name: " + data["ID"]));
+    list.appendChild(item);
+    if (data["children"] != null) {
+        var child_list = document.createElement('ul');
+        for (var child of data["children"]) {
+            populateList(child_list, child);
+        }
+        list.appendChild(child_list);
+    }
+    return list
+}
+
+function clearList() {
+    const fs = document.getElementById("file-structure");
+    while (fs.firstChild) {
+        fs.removeChild(fs.firstChild);
+    }
+}
+
+function readNGuiLayerData(element, parentElementData = null, name_list = null) {
     // Reads an NGuiLayerData struct
     var children = childElements(element);
     var style = elementByName(children, "Style");
     var style_dict = new Object();
     readNGuiGraphicStyle(style, style_dict);
     var elementData = readNGuiElementData(elementByName(children, "ElementData"),
-                                      style_dict, parentElementData);
+                                          style_dict, parentElementData, name_list);
     var children_nodes = childElements(elementByName(children, "Children"));
+    var child_list = [];
     for (var child of children_nodes) {
+        var child_obj = new Object();
         if (child.getAttribute("value") == "GcNGuiLayerData.xml") {
-            readNGuiLayerData(child, elementData);
+            readNGuiLayerData(child, elementData, child_obj);
         } else if (child.getAttribute("value") == "GcNGuiGraphicData.xml") {
-            readNGuiGraphicData(child, elementData);
+            readNGuiGraphicData(child, elementData, child_obj);
         } else if (child.getAttribute("value") == "GcNGuiTextData.xml") {
-            readNGuiTextData(child, elementData);
+            readNGuiTextData(child, elementData, child_obj);
         }
+        child_list.push(child_obj);
     }
+    name_list["children"] = child_list;
 }
 
 // children functions
 
-function readNGuiGraphicData(element, parentElementData) {
+function readNGuiGraphicData(element, parentElementData, name_list) {
     // Reads an NGUILayerData struct
     var children = childElements(element);
     var style_dict = new Object();
     readNGuiGraphicStyle(elementByName(children, "Style"), style_dict)
     elementData = readNGuiElementData(elementByName(children, "ElementData"),
-                                      style_dict, parentElementData);
+                                      style_dict, parentElementData, name_list);
 }
 
-function readNGuiTextData(element, parentElementData) {
+function readNGuiTextData(element, parentElementData, name_list) {
     var children = childElements(element);
     var text = elementByName(children, "Text").getAttribute("value");
     var style_dict = new Object();
@@ -94,8 +125,7 @@ function readNGuiTextData(element, parentElementData) {
     var text_style_dict = Object();
     readNGuiTextStyle(elementByName(children, "Style"), text_style_dict)
     var elementData = readNGuiElementData(elementByName(children, "Data"),
-                                          style_dict, parentElementData);
-    console.log("Drawing rectangle");
+                                          style_dict, parentElementData, name_list);
     // draw the text
     var defaultStyle = text_style_dict["Default"];
     var canvas = document.getElementById("drawingCanvas");
@@ -112,15 +142,14 @@ function readNGuiTextData(element, parentElementData) {
     }
     ctx.fillText(text, elementData[0] + style_dict["Default"]["PaddingX"], elementData[1] + defaultStyle["FontHeight"] + style_dict["Default"]["PaddingY"]);
     ctx.restore();
-    console.log("Drawing text");
 }
 
 // other stuff
 
-function readNGuiElementData(element, style, parentElementData) {
+function readNGuiElementData(element, style, parentElementData, name_list) {
     var children = childElements(element);
     var ID = elementByName(children, "ID").getAttribute("value");
-    console.log("drawing: " + ID);
+    name_list["ID"] = ID
     // Return the layout data as the sizes are needed for child templates to
     // determine their actual position/size.
     return readNGuiLayoutData(elementByName(children, "Layout"), style,
