@@ -242,10 +242,10 @@ function readColour(element) {
 }
 
 function colourToRGBA(colour) {
-	return "rgba(%s, %s, %s, %s)".format(colour[0], colour[1],
-		colour[2], colour[3]);
+	// rgba(255,255,255,1.0) == NMSColour(1.0, 1.0, 1.0, 1.0); we can leave alpha alone
+	return "rgba(%s, %s, %s, %s)".format(colour[0]*255, colour[1]*255,
+		colour[2]*255, colour[3]);
 }
-
 
 function elementByName(element, name) {
 	return element.querySelector(`[name="${name}"]`);
