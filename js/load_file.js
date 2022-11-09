@@ -4,9 +4,8 @@ String.prototype.format = function () {
 
 function readSingleFile(e) {
 	const file = e.files.item(0);
-	if (!file) {
-		return;
-	}
+	if (!file) return;
+
 	var reader = new FileReader();
 	reader.onload = function (e) {
 		var contents = e.target.result;
@@ -45,8 +44,7 @@ function printInfo(content) {
 
 function childElements(element) {
 	// return an array of child elements
-	const children = Array.from(element.children);
-	return children;
+	return Array.from(element.children);
 }
 
 function populateList(list, data) {
@@ -73,6 +71,7 @@ function readNGuiLayerData(element, parentElementData = null, name_list = null) 
 	var style = elementByName(element, "Style");
 	var style_dict = new Object();
 	readNGuiGraphicStyle(style, style_dict);
+	if (elementByName(element, "ElementData").querySelector('[name="IsHidden"]').getAttribute("value") == "True") return;
 	var elementData = readNGuiElementData(elementByName(element, "ElementData"),
 		style_dict, parentElementData, name_list);
 	var children_nodes = childElements(elementByName(element, "Children"));
@@ -137,7 +136,6 @@ function readNGuiTextData(element, parentElementData, name_list) {
 
 function readNGuiElementData(element, style, parentElementData, name_list) {
 	var ID = elementByName(element, "ID").getAttribute("value");
-	if (elementByName(element, "ID").parentNode.querySelector('[name="IsHidden"]').getAttribute("value") == "True") return;
 	name_list["ID"] = ID
 	// Return the layout data as the sizes are needed for child templates to
 	// determine their actual position/size.
