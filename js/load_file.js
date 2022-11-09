@@ -272,6 +272,7 @@ function drawRectangle(x, y, width, height, style) {
 	ctx.strokeStyle = colourToRGBA(defaultStyle['StrokeColour']);
 	ctx.rect(x, y, width, height);
 	//ctx.fillRect(x, y, width, height);
+	ctx.fill();
 	ctx.stroke();
 	ctx.restore();
 }
