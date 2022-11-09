@@ -11,7 +11,7 @@
 <body>
 	<h1>NMS UI Visualiser</h1>
 
-	<input type="file" id="file-input">
+	<input type="file" id="file-input" accept="text/xml, .EXML, .txt" onchange="readSingleFile(this)">
 	<p>UI preview:</p>
 	<div id="file-content"></div>
 
