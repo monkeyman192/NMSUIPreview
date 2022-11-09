@@ -70,13 +70,12 @@ function clearList() {
 
 function readNGuiLayerData(element, parentElementData = null, name_list = null) {
 	// Reads an NGuiLayerData struct
-	var children = childElements(element);
-	var style = elementByName(children, "Style");
+	var style = elementByName(element, "Style");
 	var style_dict = new Object();
 	readNGuiGraphicStyle(style, style_dict);
-	var elementData = readNGuiElementData(elementByName(children, "ElementData"),
+	var elementData = readNGuiElementData(elementByName(element, "ElementData"),
 		style_dict, parentElementData, name_list);
-	var children_nodes = childElements(elementByName(children, "Children"));
+	var children_nodes = childElements(elementByName(element, "Children"));
 	var child_list = [];
 	for (var child of children_nodes) {
 		var child_obj = new Object();
@@ -96,21 +95,19 @@ function readNGuiLayerData(element, parentElementData = null, name_list = null) 
 
 function readNGuiGraphicData(element, parentElementData, name_list) {
 	// Reads an NGUILayerData struct
-	var children = childElements(element);
 	var style_dict = new Object();
-	readNGuiGraphicStyle(elementByName(children, "Style"), style_dict)
-	elementData = readNGuiElementData(elementByName(children, "ElementData"),
+	readNGuiGraphicStyle(elementByName(element, "Style"), style_dict)
+	elementData = readNGuiElementData(elementByName(element, "ElementData"),
 		style_dict, parentElementData, name_list);
 }
 
 function readNGuiTextData(element, parentElementData, name_list) {
-	var children = childElements(element);
-	var text = elementByName(children, "Text").getAttribute("value");
+	var text = elementByName(element, "Text").getAttribute("value");
 	var style_dict = new Object();
-	readNGuiGraphicStyle(elementByName(children, "GraphicStyle"), style_dict);
+	readNGuiGraphicStyle(elementByName(element, "GraphicStyle"), style_dict);
 	var text_style_dict = Object();
-	readNGuiTextStyle(elementByName(children, "Style"), text_style_dict)
-	var elementData = readNGuiElementData(elementByName(children, "Data"),
+	readNGuiTextStyle(elementByName(element, "Style"), text_style_dict)
+	var elementData = readNGuiElementData(elementByName(element, "ElementData"),
 		style_dict, parentElementData, name_list);
 	// draw the text
 	var defaultStyle = text_style_dict["Default"];
@@ -133,24 +130,22 @@ function readNGuiTextData(element, parentElementData, name_list) {
 // other stuff
 
 function readNGuiElementData(element, style, parentElementData, name_list) {
-	var children = childElements(element);
-	var ID = elementByName(children, "ID").getAttribute("value");
-	if (elementByName(children, "ID").parentNode.querySelector('[name="IsHidden"]').getAttribute("value") == "True") return;
+	var ID = elementByName(element, "ID").getAttribute("value");
+	if (elementByName(element, "ID").parentNode.querySelector('[name="IsHidden"]').getAttribute("value") == "True") return;
 	name_list["ID"] = ID
 	// Return the layout data as the sizes are needed for child templates to
 	// determine their actual position/size.
-	return readNGuiLayoutData(elementByName(children, "Layout"), style,
+	return readNGuiLayoutData(elementByName(element, "Layout"), style,
 		parentElementData);
 }
 
 function readNGuiLayoutData(element, style, parentElementData) {
-	var children = childElements(element);
-	var PositionX = parseInt(elementByName(children, "PositionX").getAttribute("value"));
-	var PositionY = parseInt(elementByName(children, "PositionY").getAttribute("value"));
-	var Width = parseInt(elementByName(children, "Width").getAttribute("value"));
-	var WidthPercentage = elementByName(children, "WidthPercentage").getAttribute("value");
-	var Height = parseInt(elementByName(children, "Height").getAttribute("value"));
-	var HeightPercentage = elementByName(children, "HeightPercentage").getAttribute("value");
+	var PositionX = parseInt(elementByName(element, "PositionX").getAttribute("value"));
+	var PositionY = parseInt(elementByName(element, "PositionY").getAttribute("value"));
+	var Width = parseInt(elementByName(element, "Width").getAttribute("value"));
+	var WidthPercentage = elementByName(element, "WidthPercentage").getAttribute("value");
+	var Height = parseInt(elementByName(element, "Height").getAttribute("value"));
+	var HeightPercentage = elementByName(element, "HeightPercentage").getAttribute("value");
 
 	// determine the proportions of the parent element data.
 	// If there is no parent then the parentElementData will be null.
@@ -188,15 +183,14 @@ function readNGuiLayoutData(element, style, parentElementData) {
 
 function readNGuiTextStyle(element, style_dict) {
 	// Main entry point for loading text style data into the style dict.
-	var children = childElements(element);
 	// create style objects for each situation
 	var defaultStyle = new Object();
 	var highlightStyle = new Object();
 	var activeStyle = new Object();
 	// populate the dictionaries
-	readNGuiTextStyleData(elementByName(children, "Default"), defaultStyle);
-	readNGuiTextStyleData(elementByName(children, "Highlight"), highlightStyle);
-	readNGuiTextStyleData(elementByName(children, "Active"), activeStyle);
+	readNGuiTextStyleData(elementByName(element, "Default"), defaultStyle);
+	readNGuiTextStyleData(elementByName(element, "Highlight"), highlightStyle);
+	readNGuiTextStyleData(elementByName(element, "Active"), activeStyle);
 	// combine them all
 	style_dict['Default'] = defaultStyle;
 	style_dict['Highlight'] = highlightStyle;
@@ -204,26 +198,24 @@ function readNGuiTextStyle(element, style_dict) {
 }
 
 function readNGuiTextStyleData(element, style_dict) {
-	var children = childElements(element);
-	style_dict['Colour'] = readColour(elementByName(children, "Colour"));
-	style_dict['FontHeight'] = parseInt(elementByName(children, "FontHeight").getAttribute("value"));
-	style_dict['HasDropShadow'] = elementByName(children, "HasDropShadow").getAttribute("value");
-	style_dict['ShadowColour'] = readColour(elementByName(children, "ShadowColour"));
-	style_dict['DropShadowAngle'] = parseInt(elementByName(children, "DropShadowAngle").getAttribute("value"));
-	style_dict['DropShadowOffset'] = parseInt(elementByName(children, "DropShadowOffset").getAttribute("value"));
+	style_dict['Colour'] = readColour(elementByName(element, "Colour"));
+	style_dict['FontHeight'] = parseInt(elementByName(element, "FontHeight").getAttribute("value"));
+	style_dict['HasDropShadow'] = elementByName(element, "HasDropShadow").getAttribute("value");
+	style_dict['ShadowColour'] = readColour(elementByName(element, "ShadowColour"));
+	style_dict['DropShadowAngle'] = parseInt(elementByName(element, "DropShadowAngle").getAttribute("value"));
+	style_dict['DropShadowOffset'] = parseInt(elementByName(element, "DropShadowOffset").getAttribute("value"));
 }
 
 function readNGuiGraphicStyle(element, style_dict) {
 	// Main entry point for loading graphic style data into the style dict.
-	var children = childElements(element);
 	// create style objects for each situation
 	var defaultStyle = new Object();
 	var highlightStyle = new Object();
 	var activeStyle = new Object();
 	// populate the dictionaries
-	readNGuiGraphicStyleData(elementByName(children, "Default"), defaultStyle);
-	readNGuiGraphicStyleData(elementByName(children, "Highlight"), highlightStyle);
-	readNGuiGraphicStyleData(elementByName(children, "Default"), activeStyle);
+	readNGuiGraphicStyleData(elementByName(element, "Default"), defaultStyle);
+	readNGuiGraphicStyleData(elementByName(element, "Highlight"), highlightStyle);
+	readNGuiGraphicStyleData(elementByName(element, "Default"), activeStyle);
 	// combine them all
 	style_dict['Default'] = defaultStyle;
 	style_dict['Highlight'] = highlightStyle;
@@ -231,20 +223,18 @@ function readNGuiGraphicStyle(element, style_dict) {
 }
 
 function readNGuiGraphicStyleData(element, style_dict) {
-	var children = childElements(element);
-	style_dict['PaddingX'] = parseInt(elementByName(children, "PaddingX").getAttribute("value"));
-	style_dict['PaddingY'] = parseInt(elementByName(children, "PaddingY").getAttribute("value"));
-	style_dict['Colour'] = readColour(elementByName(children, "Colour"));
-	style_dict['StrokeColour'] = readColour(elementByName(children, "StrokeColour"));
+	style_dict['PaddingX'] = parseInt(elementByName(element, "PaddingX").getAttribute("value"));
+	style_dict['PaddingY'] = parseInt(elementByName(element, "PaddingY").getAttribute("value"));
+	style_dict['Colour'] = readColour(elementByName(element, "Colour"));
+	style_dict['StrokeColour'] = readColour(elementByName(element, "StrokeColour"));
 }
 
 function readColour(element) {
 	// Read and return a colour struct
-	var children = childElements(element);
-	return [elementByName(children, "R").getAttribute("value"),
-	elementByName(children, "G").getAttribute("value"),
-	elementByName(children, "B").getAttribute("value"),
-	elementByName(children, "A").getAttribute("value")];
+	return [elementByName(element, "R").getAttribute("value"),
+	elementByName(element, "G").getAttribute("value"),
+	elementByName(element, "B").getAttribute("value"),
+	elementByName(element, "A").getAttribute("value")];
 }
 
 function colourToRGBA(colour) {
@@ -253,13 +243,11 @@ function colourToRGBA(colour) {
 }
 
 
-function elementByName(elements, name) {
-	for (var child of elements) {
-		if (child.getAttribute("name") == name) {
-			return child;
-		}
-	}
-	return null;
+function elementByName(element, name) {
+	console.log(name)
+	const test = element.querySelector(`[name="${name}"]`);
+	console.log(test)
+	return test
 }
 
 function getData(element, reqName) {
