@@ -79,12 +79,18 @@ function readNGuiLayerData(element, parentElementData = null, name_list = null) 
 	var child_list = [];
 	for (var child of children_nodes) {
 		var child_obj = new Object();
-		if (child.getAttribute("value") == "GcNGuiLayerData.xml") {
-			readNGuiLayerData(child, elementData, child_obj);
-		} else if (child.getAttribute("value") == "GcNGuiGraphicData.xml") {
-			readNGuiGraphicData(child, elementData, child_obj);
-		} else if (child.getAttribute("value") == "GcNGuiTextData.xml") {
-			readNGuiTextData(child, elementData, child_obj);
+		switch (child.getAttribute("value")) {
+			case "GcNGuiLayerData.xml":
+				readNGuiLayerData(child, elementData, child_obj);
+				break;
+
+			case "GcNGuiGraphicData.xml":
+				readNGuiGraphicData(child, elementData, child_obj);
+				break;
+
+			case "GcNGuiTextData.xml":
+				readNGuiTextData(child, elementData, child_obj);
+				break;
 		}
 		child_list.push(child_obj);
 	}
@@ -121,7 +127,7 @@ function readNGuiTextData(element, parentElementData, name_list) {
 		ctx.shadowColor = colourToRGBA(defaultStyle["ShadowColour"]);
 		ctx.shadowOffsetX = defaultStyle["DropShadowOffset"] * Math.cos(defaultStyle["DropShadowAngle"]);
 		ctx.shadowOffsetY = defaultStyle["DropShadowOffset"] * Math.sin(defaultStyle["DropShadowAngle"]);
-		ctx.shadowBlur = 3;     // Arbitrary value to make it look nicer
+		ctx.shadowBlur = 3;		// Arbitrary value to make it look nicer
 	}
 	ctx.fillText(text, elementData[0] + style_dict["Default"]["PaddingX"], elementData[1] + defaultStyle["FontHeight"] + style_dict["Default"]["PaddingY"]);
 	ctx.restore();
@@ -244,12 +250,10 @@ function colourToRGBA(colour) {
 
 
 function elementByName(element, name) {
-	console.log(name)
-	const test = element.querySelector(`[name="${name}"]`);
-	console.log(test)
-	return test
+	return element.querySelector(`[name="${name}"]`);
 }
 
+// Unused
 function getData(element, reqName) {
 	var name = element.getAttribute("name");
 	var value = element.getAttribute("value");
