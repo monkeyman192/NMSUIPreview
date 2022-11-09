@@ -135,7 +135,7 @@ function readNGuiTextData(element, parentElementData, name_list) {
     ctx.font = "%spx Ariel".format(defaultStyle["FontHeight"]);
     ctx.fillStyle = colourToRGBA(defaultStyle["Colour"]);
     if (defaultStyle["HasDropShadow"] == "True") {
-        ctx.shadowColor = colourToRGBA(defaultStyle["DropShadowColour"]);
+        ctx.shadowColor = colourToRGBA(defaultStyle["ShadowColour"]);
         ctx.shadowOffsetX = defaultStyle["DropShadowOffset"] * Math.cos(defaultStyle["DropShadowAngle"]);
         ctx.shadowOffsetY = defaultStyle["DropShadowOffset"] * Math.sin(defaultStyle["DropShadowAngle"]);
         ctx.shadowBlur = 3;     // Arbitrary value to make it look nicer
@@ -221,7 +221,7 @@ function readNGuiTextStyleData(element, style_dict) {
     style_dict['Colour'] = readColour(elementByName(children, "Colour"));
     style_dict['FontHeight'] = parseInt(elementByName(children, "FontHeight").getAttribute("value"));
     style_dict['HasDropShadow'] = elementByName(children, "HasDropShadow").getAttribute("value");
-    style_dict['DropShadowColour'] = readColour(elementByName(children, "DropShadowColour"));
+    style_dict['ShadowColour'] = readColour(elementByName(children, "ShadowColour"));
     style_dict['DropShadowAngle'] = parseInt(elementByName(children, "DropShadowAngle").getAttribute("value"));
     style_dict['DropShadowOffset'] = parseInt(elementByName(children, "DropShadowOffset").getAttribute("value"));
 }
