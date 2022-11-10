@@ -231,6 +231,7 @@ function readNGuiGraphicStyleData(element, style_dict) {
 	style_dict['PaddingY'] = parseInt(elementByName(element, "PaddingY").getAttribute("value"));
 	style_dict['Colour'] = readColour(elementByName(element, "Colour"));
 	style_dict['StrokeColour'] = readColour(elementByName(element, "StrokeColour"));
+	style_dict['StrokeSize'] = parseFloat(elementByName(element, "StrokeSize").getAttribute("value"));
 }
 
 function readColour(element) {
@@ -271,8 +272,10 @@ function drawRectangle(x, y, width, height, style) {
 	ctx.fillStyle = colourToRGBA(defaultStyle['Colour']);
 	ctx.strokeStyle = colourToRGBA(defaultStyle['StrokeColour']);
 	ctx.rect(x, y, width, height);
-	//ctx.fillRect(x, y, width, height);
 	ctx.fill();
-	ctx.stroke();
+	ctx.lineWidth = defaultStyle['StrokeSize'];
+	if (defaultStyle['StrokeSize'] > 0) { // apparently a lineWidth of 0 defaults to 1??
+		ctx.stroke();
+	}
 	ctx.restore();
 }
